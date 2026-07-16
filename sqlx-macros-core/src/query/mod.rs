@@ -282,7 +282,7 @@ where
     let mut warnings_out = TokenStream::new();
 
     if warnings.ambiguous_datetime {
-        // Warns if the date-time crate is inferred but both `chrono` and `time` are enabled
+        // Warns if the date-time crate is inferred but multiple integrations are enabled.
         warnings_out.extend(quote! {
             ::sqlx::warn_on_ambiguous_inferred_date_time_crate();
         });

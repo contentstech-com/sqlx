@@ -237,8 +237,9 @@ pub struct PreferredCrates {
     /// Specify the crate to use for mapping date/time types to Rust.
     ///
     /// The default behavior is to use whatever crate is enabled,
-    /// [`chrono`] or [`time`] (the latter takes precedent).
+    /// [`jiff`], [`chrono`] or [`time`] (in increasing order of precedence).
     ///
+    /// [`jiff`]: crate::types::jiff
     /// [`chrono`]: crate::types::chrono
     /// [`time`]: crate::types::time
     ///
@@ -295,7 +296,7 @@ pub struct PreferredCrates {
     serde(rename_all = "snake_case")
 )]
 pub enum DateTimeCrate {
-    /// Use whichever crate is enabled (`time` then `chrono`).
+    /// Use whichever crate is enabled (`time`, then `chrono`, then `jiff`).
     #[default]
     Inferred,
 
@@ -314,6 +315,14 @@ pub enum DateTimeCrate {
     /// date-time = "time"
     /// ```
     Time,
+
+    /// Always use types from [`jiff`][crate::types::jiff].
+    ///
+    /// ```toml
+    /// [macros.preferred-crates]
+    /// date-time = "jiff"
+    /// ```
+    Jiff,
 }
 
 /// The preferred crate to use for mapping `NUMERIC` types to Rust.
@@ -396,6 +405,7 @@ impl DateTimeCrate {
             Self::Inferred => None,
             Self::Chrono => Some("chrono"),
             Self::Time => Some("time"),
+            Self::Jiff => Some("jiff"),
         }
     }
 }
