@@ -213,7 +213,7 @@ impl MySqlTime {
 
     /// Returns `true` if `self` is negative, `false` if positive or zero.
     pub fn is_negative(&self) -> bool {
-        self.sign.is_positive()
+        self.sign.is_negative()
     }
 
     /// Returns `true` if this interval is a valid time-of-day.
