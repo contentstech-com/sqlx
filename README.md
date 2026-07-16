@@ -207,7 +207,9 @@ be removed in the future.
 
 -   `chrono`: Add support for date and time types from `chrono`.
 
--   `time`: Add support for date and time types from `time` crate (alternative to `chrono`, which is preferred by `query!` macro, if both enabled)
+-   `jiff`: Add support for date and time types from `jiff`.
+
+-   `time`: Add support for date and time types from `time` crate (preferred by `query!` over `chrono` and `jiff` when multiple integrations are enabled).
 
 -   `bstr`: Add support for `bstr::BString`.
 
