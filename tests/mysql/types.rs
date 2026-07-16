@@ -234,6 +234,46 @@ mod time_tests {
     }
 }
 
+#[cfg(feature = "jiff")]
+mod jiff_tests {
+    use super::*;
+    use sqlx::types::jiff::{
+        civil::{Date, DateTime, Time},
+        SignedDuration, Timestamp,
+    };
+
+    test_type!(jiff_date<Date>(
+        MySql,
+        "DATE '2001-01-05'" == "2001-01-05".parse::<Date>().unwrap(),
+        "DATE '2050-11-23'" == "2050-11-23".parse::<Date>().unwrap()
+    ));
+
+    test_type!(jiff_time<Time>(
+        MySql,
+        "TIME '00:00:00.000000'" == "00:00:00".parse::<Time>().unwrap(),
+        "TIME '05:10:20.115100'" == "05:10:20.1151".parse::<Time>().unwrap()
+    ));
+
+    test_type!(jiff_date_time<DateTime>(
+        MySql,
+        "TIMESTAMP '2019-01-02 05:10:20'" == "2019-01-02 05:10:20".parse::<DateTime>().unwrap(),
+        "TIMESTAMP '2019-01-02 05:10:20.115100'"
+            == "2019-01-02 05:10:20.1151".parse::<DateTime>().unwrap()
+    ));
+
+    test_type!(jiff_timestamp<Timestamp>(
+        MySql,
+        "TIMESTAMP '2019-01-02 05:10:20.115100'"
+            == "2019-01-02T05:10:20.1151Z".parse::<Timestamp>().unwrap()
+    ));
+
+    test_type!(jiff_signed_duration<SignedDuration>(
+        MySql,
+        "TIME '123:45:56.890011'" == SignedDuration::new(445_556, 890_011_000),
+        "TIME '-123:45:56.890011'" == SignedDuration::new(-445_556, -890_011_000)
+    ));
+}
+
 #[cfg(feature = "bigdecimal")]
 test_type!(bigdecimal<sqlx::types::BigDecimal>(
     MySql,
