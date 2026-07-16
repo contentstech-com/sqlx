@@ -6,7 +6,7 @@ use sqlx_core::executor::Executor;
 use sqlx_core::row::Row;
 use sqlx_core::types::Text;
 use sqlx_test::new;
-use sqlx_test::test_type;
+use sqlx_test::{test_decode_type, test_type};
 use std::borrow::Cow;
 use std::net::SocketAddr;
 use std::rc::Rc;
@@ -165,6 +165,52 @@ mod time_tests {
         "'21:46:32'" == time!(21:46:32),
         "'20:45:31.133'" == time!(20:45:31.133),
         "'19:44'" == time!(19:44),
+    ));
+}
+
+#[cfg(feature = "jiff")]
+mod jiff_tests {
+    use super::*;
+    use sqlx::types::jiff::{
+        civil::{Date, DateTime, Time},
+        Timestamp,
+    };
+
+    test_type!(jiff_timestamp<Timestamp>(
+        Sqlite,
+        "SELECT datetime({0}) is datetime(?), {0}, ?",
+        "'1996-12-20T00:39:57Z'" == "1996-12-20T00:39:57Z".parse::<Timestamp>().unwrap(),
+        "'2016-11-08T03:50:23-05:00'" == "2016-11-08T08:50:23Z".parse::<Timestamp>().unwrap()
+    ));
+
+    test_type!(jiff_date_time<DateTime>(
+        Sqlite,
+        "SELECT datetime({0}) is datetime(?), {0}, ?",
+        "'2019-01-02 05:10:20'" == "2019-01-02 05:10:20".parse::<DateTime>().unwrap(),
+        "'2018-12-01T04:09:19.543'" == "2018-12-01T04:09:19.543".parse::<DateTime>().unwrap()
+    ));
+
+    test_type!(jiff_date<Date>(
+        Sqlite,
+        "SELECT date({0}) is date(?), {0}, ?",
+        "'2002-06-04'" == "2002-06-04".parse::<Date>().unwrap()
+    ));
+
+    test_type!(jiff_time<Time>(
+        Sqlite,
+        "SELECT time({0}) is time(?), {0}, ?",
+        "'21:46:32'" == "21:46:32".parse::<Time>().unwrap(),
+        "'20:45:31.133'" == "20:45:31.133".parse::<Time>().unwrap()
+    ));
+
+    test_decode_type!(jiff_timestamp_integer<Timestamp>(
+        Sqlite,
+        "0" == Timestamp::UNIX_EPOCH
+    ));
+
+    test_decode_type!(jiff_timestamp_julian<Timestamp>(
+        Sqlite,
+        "2440587.5" == Timestamp::UNIX_EPOCH
     ));
 }
 

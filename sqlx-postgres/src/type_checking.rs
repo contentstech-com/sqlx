@@ -189,6 +189,44 @@ impl_type_checking!(
             Vec<sqlx::postgres::types::PgRange<sqlx::types::time::OffsetDateTime>> |
                 &[sqlx::postgres::types::PgRange<sqlx::types::time::OffsetDateTime>],
         },
+        jiff: {
+            // Scalar types
+            sqlx::types::jiff::civil::Time,
+
+            sqlx::types::jiff::civil::Date,
+
+            sqlx::types::jiff::civil::DateTime,
+
+            sqlx::types::jiff::Timestamp,
+
+            sqlx::postgres::types::PgTimeTz<sqlx::types::jiff::civil::Time, sqlx::types::jiff::tz::Offset>,
+
+            // Array types
+            Vec<sqlx::types::jiff::civil::Time> | &[sqlx::types::jiff::civil::Time],
+
+            Vec<sqlx::types::jiff::civil::Date> | &[sqlx::types::jiff::civil::Date],
+
+            Vec<sqlx::types::jiff::civil::DateTime> | &[sqlx::types::jiff::civil::DateTime],
+
+            Vec<sqlx::types::jiff::Timestamp> | &[sqlx::types::jiff::Timestamp],
+
+            // Range types
+            sqlx::postgres::types::PgRange<sqlx::types::jiff::civil::Date>,
+
+            sqlx::postgres::types::PgRange<sqlx::types::jiff::civil::DateTime>,
+
+            sqlx::postgres::types::PgRange<sqlx::types::jiff::Timestamp>,
+
+            // Arrays of ranges
+            Vec<sqlx::postgres::types::PgRange<sqlx::types::jiff::civil::Date>> |
+                &[sqlx::postgres::types::PgRange<sqlx::types::jiff::civil::Date>],
+
+            Vec<sqlx::postgres::types::PgRange<sqlx::types::jiff::civil::DateTime>> |
+                &[sqlx::postgres::types::PgRange<sqlx::types::jiff::civil::DateTime>],
+
+            Vec<sqlx::postgres::types::PgRange<sqlx::types::jiff::Timestamp>> |
+                &[sqlx::postgres::types::PgRange<sqlx::types::jiff::Timestamp>],
+        },
     },
     numeric-types: {
         bigdecimal: {

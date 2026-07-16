@@ -401,6 +401,78 @@ mod time_tests {
     ));
 }
 
+#[cfg(feature = "jiff")]
+mod jiff_tests {
+    use super::*;
+    use sqlx::types::jiff::{
+        civil::{Date, DateTime, Time},
+        tz::Offset,
+        SignedDuration, Timestamp,
+    };
+
+    type PgTimeTz = sqlx::postgres::types::PgTimeTz<Time, Offset>;
+
+    test_type!(jiff_date<Date>(
+        Postgres,
+        "DATE '2001-01-05'" == "2001-01-05".parse::<Date>().unwrap(),
+        "DATE '2050-11-23'" == "2050-11-23".parse::<Date>().unwrap()
+    ));
+
+    test_type!(jiff_time<Time>(
+        Postgres,
+        "TIME '05:10:20.115100'" == "05:10:20.1151".parse::<Time>().unwrap(),
+        "TIME '05:10:20'" == "05:10:20".parse::<Time>().unwrap()
+    ));
+
+    test_type!(jiff_date_time<DateTime>(
+        Postgres,
+        "TIMESTAMP '2019-01-02 05:10:20'" == "2019-01-02 05:10:20".parse::<DateTime>().unwrap(),
+        "TIMESTAMP '2019-01-02 05:10:20.1151'"
+            == "2019-01-02 05:10:20.1151".parse::<DateTime>().unwrap()
+    ));
+
+    test_type!(jiff_date_time_vec<Vec<DateTime>>(Postgres,
+        "array['2019-01-02 05:10:20.1151']::timestamp[]"
+            == vec!["2019-01-02 05:10:20.1151".parse::<DateTime>().unwrap()]
+    ));
+
+    test_type!(jiff_timestamp<Timestamp>(
+        Postgres,
+        "TIMESTAMPTZ '2019-01-02 05:10:20.115100+00'"
+            == "2019-01-02T05:10:20.1151Z".parse::<Timestamp>().unwrap()
+    ));
+
+    test_type!(jiff_timestamp_vec<Vec<Timestamp>>(Postgres,
+        "array['2019-01-02 05:10:20.1151+00']::timestamptz[]"
+            == vec!["2019-01-02T05:10:20.1151Z".parse::<Timestamp>().unwrap()]
+    ));
+
+    test_prepared_type!(jiff_time_tz<PgTimeTz>(Postgres,
+        "TIMETZ '05:10:20.115100+00'" == PgTimeTz {
+            time: "05:10:20.1151".parse().unwrap(),
+            offset: Offset::UTC,
+        },
+        "TIMETZ '05:10:20.115100+06:30'" == PgTimeTz {
+            time: "05:10:20.1151".parse().unwrap(),
+            offset: Offset::from_seconds(23_400).unwrap(),
+        }
+    ));
+
+    test_prepared_type!(jiff_signed_duration<SignedDuration>(
+        Postgres,
+        "INTERVAL '1h'" == SignedDuration::from_hours(1),
+        "INTERVAL '-1 hours'" == SignedDuration::from_hours(-1)
+    ));
+
+    test_type!(jiff_date_range<PgRange<Date>>(Postgres,
+        "'[2001-01-05,2001-01-07)'::daterange"
+            == PgRange::from(
+                "2001-01-05".parse::<Date>().unwrap()
+                    .."2001-01-07".parse::<Date>().unwrap()
+            )
+    ));
+}
+
 #[cfg(feature = "json")]
 mod json {
     use super::*;

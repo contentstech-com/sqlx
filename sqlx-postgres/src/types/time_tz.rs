@@ -13,11 +13,17 @@ type DefaultTime = ::time::Time;
 #[cfg(all(not(feature = "time"), feature = "chrono"))]
 type DefaultTime = ::chrono::NaiveTime;
 
+#[cfg(all(not(feature = "time"), not(feature = "chrono"), feature = "jiff"))]
+type DefaultTime = ::jiff::civil::Time;
+
 #[cfg(feature = "time")]
 type DefaultOffset = ::time::UtcOffset;
 
 #[cfg(all(not(feature = "time"), feature = "chrono"))]
 type DefaultOffset = ::chrono::FixedOffset;
+
+#[cfg(all(not(feature = "time"), not(feature = "chrono"), feature = "jiff"))]
+type DefaultOffset = ::jiff::tz::Offset;
 
 /// Represents a moment of time, in a specified timezone.
 ///
@@ -168,6 +174,55 @@ mod time {
                 PgValueFormat::Text => {
                     // the `time` crate has a limited ability to parse and can't parse the
                     // timezone format
+                    Err("reading a `TIMETZ` value in text format is not supported.".into())
+                }
+            }
+        }
+    }
+}
+
+#[cfg(feature = "jiff")]
+mod jiff {
+    use super::*;
+    use ::jiff::{civil::Time, tz::Offset, SignedDuration};
+
+    impl Type<Postgres> for PgTimeTz<Time, Offset> {
+        fn type_info() -> PgTypeInfo {
+            PgTypeInfo::TIMETZ
+        }
+    }
+
+    impl Encode<'_, Postgres> for PgTimeTz<Time, Offset> {
+        fn encode_by_ref(&self, buf: &mut PgArgumentBuffer) -> Result<IsNull, BoxDynError> {
+            let _: IsNull = <Time as Encode<'_, Postgres>>::encode(self.time, buf)?;
+            let _: IsNull = <i32 as Encode<'_, Postgres>>::encode(-self.offset.seconds(), buf)?;
+
+            Ok(IsNull::No)
+        }
+
+        fn size_hint(&self) -> usize {
+            mem::size_of::<i64>() + mem::size_of::<i32>()
+        }
+    }
+
+    impl<'r> Decode<'r, Postgres> for PgTimeTz<Time, Offset> {
+        fn decode(value: PgValueRef<'r>) -> Result<Self, BoxDynError> {
+            match value.format() {
+                PgValueFormat::Binary => {
+                    let mut buf = Cursor::new(value.as_bytes()?);
+                    let micros = buf.read_i64::<BigEndian>()?;
+                    let seconds = buf.read_i32::<BigEndian>()?;
+
+                    Ok(PgTimeTz {
+                        time: Time::midnight().checked_add(SignedDuration::from_micros(micros))?,
+                        offset: Offset::from_seconds(
+                            seconds.checked_neg().ok_or(
+                                "server returned a `TIMETZ` offset that cannot be negated",
+                            )?,
+                        )?,
+                    })
+                }
+                PgValueFormat::Text => {
                     Err("reading a `TIMETZ` value in text format is not supported.".into())
                 }
             }

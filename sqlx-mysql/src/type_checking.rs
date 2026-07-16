@@ -51,6 +51,15 @@ impl_type_checking!(
 
             sqlx::types::time::OffsetDateTime,
         },
+        jiff: {
+            sqlx::types::jiff::civil::Time,
+
+            sqlx::types::jiff::civil::Date,
+
+            sqlx::types::jiff::civil::DateTime,
+
+            sqlx::types::jiff::Timestamp,
+        },
     },
     numeric-types: {
         bigdecimal: {
