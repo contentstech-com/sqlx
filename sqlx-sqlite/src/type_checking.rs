@@ -48,6 +48,13 @@ impl_type_checking!(
 
             sqlx::types::time::Date,
         },
+        jiff: {
+            sqlx::types::jiff::Timestamp,
+
+            sqlx::types::jiff::civil::DateTime,
+
+            sqlx::types::jiff::civil::Date,
+        },
     },
     numeric-types: {
         bigdecimal: { },

@@ -261,7 +261,10 @@ impl MySqlTime {
         self.hours() * 3600 + self.minutes() as u32 * 60 + self.seconds() as u32
     }
 
-    #[cfg_attr(not(any(feature = "time", feature = "chrono")), allow(dead_code))]
+    #[cfg_attr(
+        not(any(feature = "time", feature = "chrono", feature = "jiff")),
+        allow(dead_code)
+    )]
     pub(crate) fn whole_seconds_signed(&self) -> i64 {
         self.whole_seconds() as i64 * self.sign.signum() as i64
     }

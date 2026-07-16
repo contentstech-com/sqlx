@@ -65,6 +65,25 @@
 //! | `chrono::NaiveTime`                   | TIME                                                 |
 //! | [`PgTimeTz`]                          | TIMETZ                                               |
 //!
+//! ### [`jiff`](https://crates.io/crates/jiff)
+//!
+//! Requires the `jiff` Cargo feature flag.
+//!
+//! | Rust type                             | Postgres type(s)                                     |
+//! |---------------------------------------|------------------------------------------------------|
+//! | `jiff::Timestamp`                     | TIMESTAMPTZ                                          |
+//! | `jiff::civil::DateTime`               | TIMESTAMP                                            |
+//! | `jiff::civil::Date`                   | DATE                                                 |
+//! | `jiff::civil::Time`                   | TIME                                                 |
+//! | `jiff::SignedDuration`                | INTERVAL                                             |
+//! | `jiff::Span`                          | INTERVAL (decode only)                               |
+//! | [`PgTimeTz`]                          | TIMETZ                                               |
+//!
+//! Arrays and [`PgRange`] values are supported for the corresponding temporal types.
+//! `jiff::Zoned` is intentionally unsupported because PostgreSQL does not preserve its named
+//! time zone. PostgreSQL has microsecond precision. Finer precision is truncated when encoding
+//! timestamps and times, while encoding `jiff::SignedDuration` returns an error.
+//!
 //! ### [`time`](https://crates.io/crates/time)
 //!
 //! Requires the `time` Cargo feature flag.
@@ -236,7 +255,7 @@ mod text;
 mod tuple;
 mod void;
 
-#[cfg(any(feature = "chrono", feature = "time"))]
+#[cfg(any(feature = "chrono", feature = "jiff", feature = "time"))]
 mod time_tz;
 
 #[cfg(feature = "bigdecimal")]
@@ -254,6 +273,9 @@ mod rust_decimal;
 
 #[cfg(feature = "chrono")]
 mod chrono;
+
+#[cfg(feature = "jiff")]
+mod jiff;
 
 #[cfg(feature = "time")]
 mod time;
@@ -296,7 +318,7 @@ pub use money::PgMoney;
 pub use oid::Oid;
 pub use range::PgRange;
 
-#[cfg(any(feature = "chrono", feature = "time"))]
+#[cfg(any(feature = "chrono", feature = "jiff", feature = "time"))]
 pub use time_tz::PgTimeTz;
 
 // used in derive(Type) for `struct`
